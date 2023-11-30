@@ -1,0 +1,52 @@
+version: "3"
+services:
+  db_mysql:
+    container_name: mvc-mysql
+    image: mysql:8.0.34
+    restart: always
+    networks:
+      - internal-network
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "password"
+      MYSQL_DATABASE: "database"
+    healthcheck:
+      test: "mysqladmin ping --silent"
+      interval: 1s
+      retries: 120
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+    ports:
+      - "3303:3306"
+  mvc:
+    container_name: mvc-app
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "1234:1234"
+      - "9321:9321"
+    environment:
+      JAVA_TOOL_OPTIONS: -Xdebug -Xmx2048m -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9321 -Dcom.sun.management.jmxremote.rmi.port=9321 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=${HOST_IP:-$DEFAULT_IP}
+      SPRING_APPLICATION_JSON: '{
+        "spring.datasource.url"  : "jdbc:mysql://db_mysql/database?allowPublicKeyRetrieval=true&useSSL=false",
+        "spring.datasource.username" : "user",
+        "spring.datasource.password" : "password",
+        "spring.datasource.hikari.maximum-pool-size": 1000 }'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db_mysql:
+        condition: service_healthy
+    restart: always
+    networks:
+      - internal-network
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+networks:
+  internal-network:
+    driver: bridge

@@ -1,0 +1,73 @@
+version: "3"
+services:
+#  db_mongo:
+#    container_name: stage1_s02_mongo_flux
+#    image: mongo:6.0.10
+#    restart: always
+#    networks:
+#      - internal-network
+#    healthcheck:
+#      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+#      interval: 10s
+#      timeout: 10s
+#      retries: 5
+#    ports:
+#      - "27017:27017"
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "1"
+#  db_mysql:
+#    container_name: webflux-mysql
+#    image: mysql:8.0.34
+#    restart: always
+#    networks:
+#      - internal-network
+#    environment:
+#      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+#      MYSQL_USER: "user"
+#      MYSQL_PASSWORD: "password"
+#      MYSQL_DATABASE: "database"
+#    healthcheck:
+#      test: "mysqladmin ping --silent"
+#      interval: 1s
+#      retries: 120
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "2"
+#    ports:
+#      - "3306:3306"
+  webflux:
+    network_mode: bridge
+    container_name: webflux-app
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "4321:4321"
+      - "9322:9322"
+    environment:
+      JAVA_TOOL_OPTIONS: -Xdebug -Xmx2048m
+      SPRING_APPLICATION_JSON: '{
+            "spring.r2dbc.url"  : "r2dbc:mysql://172.19.19.19:3306/database?allowPublicKeyRetrieval=true&useSSL=false",
+            "spring.r2dbc.username" : "user",
+            "spring.r2dbc.password" : "password",
+            "spring.r2dbc.pool.initial-size" : 1000,
+            "spring.r2dbc.pool.max-size" : 1000
+        }'
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+#    depends_on:
+#      db_mysql:
+#        condition: service_healthy
+    restart: always
+#    networks:
+#      - default
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+#networks:
+#  default:
+#    driver: bridge
+

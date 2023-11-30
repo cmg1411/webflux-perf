@@ -1,0 +1,31 @@
+server:
+  port: 4322
+spring:
+  r2dbc:
+    url: r2dbc:mysql://172.19.19.19/database?allowPublicKeyRetrieval=true&useSSL=false
+    username: user
+    password: password
+    pool:
+      max-size: 1000
+      initial-size: 1000
+  #      initial-size: 100
+#      max-size: 100
+#  datasource:
+#    url: jdbc:mysql://db_mysql/database?allowPublicKeyRetrieval=true&useSSL=false
+#    username: user
+#    password: password
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    hikari:
+#      maximum-pool-size: 100
+#  data:
+#    mongodb:
+#      host: localhost
+#      port: 27017
+#      database: mongo_test
+#      uuid-representation: standard
+#      auto-index-creation: true
+
+  sql:
+    init:
+      mode: never
+      separator: ^;
